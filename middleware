@@ -1,0 +1,26 @@
+function requireAuth(req, res, next) {
+  if (!req.session.userId) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+
+  req.userId = req.session.userId;
+  next();
+}
+
+module.exports = requireAuth;
+
+const requireAuth = require("./middleware/auth");
+
+app.get("/api/projects", requireAuth, async (req, res) => {
+  const projects = await Project.findAll({
+    where: { userId: req.userId }
+  });
+
+  res.json(projects);
+});
+
+app.post("/api/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.json({ message: "Logged out successfully" });
+  });
+});
